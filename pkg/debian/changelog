@@ -1,0 +1,5 @@
+bats-support (0.3.0-1) unstable; urgency=medium
+
+  * Initial deb release
+
+ -- Bats-core-org <bats-core@github.com>  Sat, 27 Nov 2021 16:14:32 +0100

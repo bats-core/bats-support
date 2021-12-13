@@ -1,0 +1,14 @@
+Source: bats-support
+Section: shells
+Priority: optional
+Maintainer: Bats-core-org <bats-core@github.com>
+Build-Depends: debhelper-compat (= 12)
+Standards-Version: 4.4.1
+Homepage: https://github.com/bats-core/bats-support
+#Vcs-Browser: https://salsa.debian.org/debian/bats-support-0.3.0
+#Vcs-Git: https://salsa.debian.org/debian/bats-support-0.3.0.git
+
+Package: bats-support
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, bash, bats
+Description:  Supporting library for Bats test helpers

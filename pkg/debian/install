@@ -1,0 +1,4 @@
+src/* usr/lib/bats-support/src/
+load.bash usr/lib/bats-support/
+LICENSE usr/lib/bats-support/
+test usr/lib/bats-support/

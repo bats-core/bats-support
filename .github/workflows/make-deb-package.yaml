@@ -1,0 +1,94 @@
+name: build-debian-package
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+env:
+  DEBFULLNAME: bats-core-org
+  DEBEMAIL: bats-core@github.com
+jobs:
+  bats-support:
+    name: build bats-support
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract tag name
+        id: tagname
+        shell: bash
+        run: |
+          echo "SUPPORT-TAG=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          echo ::set-output name=currentag::${GITHUB_REF#refs/tags/}
+
+      - name: Install prerequisites
+        run: sudo apt update; sudo apt install dh-make devscripts -y
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: bats-support-${{ env.SUPPORT-TAG }}
+
+      - name: Dh_make
+        working-directory: bats-support-${{ env.SUPPORT-TAG }}
+        run: dh_make --createorig -s -y
+
+      - name: Override defaults
+        working-directory: bats-support-${{ env.SUPPORT-TAG }}
+        run: ls -l; cp pkg/debian/* debian/
+
+      - name: Bats-support - debuild
+        working-directory: bats-support-${{ env.SUPPORT-TAG }}
+        run: debuild -us -uc
+
+      - name: Bats-support - debinfo
+        working-directory: bats-support-${{ env.SUPPORT-TAG }}
+        run: dpkg --info ../bats-support_${{ env.SUPPORT-TAG }}*.deb
+
+      - name: Bats-support - install
+        working-directory: bats-support-${{ env.SUPPORT-TAG }}
+        run: sudo apt install -y ../bats-support_${{ env.SUPPORT-TAG }}*.deb
+
+      - name: Bats-support - make test
+        working-directory: bats-support-${{ env.SUPPORT-TAG }}
+        run: bats /usr/lib/bats-support/test/
+
+      - name: Bats-support upload deb
+        uses: actions/upload-artifact@v2
+        with:
+          name: results-debs
+          path: ./*_amd64.deb
+
+  make-release:
+    needs: [bats-support]
+    name: release and upload artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract tag name
+        id: tagname
+        shell: bash
+        run: |
+          echo "SUPPORT-TAG=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          echo ::set-output name=currentag::${GITHUB_REF#refs/tags/}
+
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: bats-support-${{ env.SUPPORT-TAG }}
+
+      - name: Create changelog
+        working-directory: bats-support-${{ env.SUPPORT-TAG }}
+        run: |
+          sudo apt update; sudo apt install -y dpkg-dev
+          dpkg-parsechangelog -l pkg/debian/changelog --count 0 \
+            --show-field Changes|grep -v bats-support > verchangelog
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: bats-support-${{ env.SUPPORT-TAG }}/verchangelog
+          body: "Bats-support version ${{ env.SUPPORT-TAG }}"
+          files: |
+            results-debs/bats-*.deb
