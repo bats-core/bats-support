@@ -44,12 +44,8 @@ batslib_err() {
 }
 
 # Count the number of lines in the given string.
-#
-# TODO(ztombol): Fix tests and remove this note after #93 is resolved!
-# NOTE: Due to a bug in Bats, `batslib_count_lines "$output"' does not
-#       give the same result as `${#lines[@]}' when the output contains
-#       empty lines.
-#       See PR #93 (https://github.com/sstephenson/bats/pull/93).
+# If the string has a trailing newline, it is interpretted as being generated with `run --keep-empty-lines` or similar.
+# This function will then read and count all empty lines and trailing newlines.
 #
 # Globals:
 #   none
@@ -60,11 +56,22 @@ batslib_err() {
 # Outputs:
 #   STDOUT - number of lines
 batslib_count_lines() {
+  local -r input="$1"
+
+  local line=''
   local -i n_lines=0
-  local line
-  while IFS='' read -r line || [[ -n $line ]]; do
+  # Read and count each line, until the last line (handled below).
+  while IFS='' read -r line; do
     (( ++n_lines ))
-  done < <(printf '%s' "$1")
+  done < <(printf '%s' "$input")
+  # If there's a detectable trailing newline, it's there on purpose (e.g. `run --keep-empty-lines`),
+  # then empty lines must be properly handled.
+  # Or, if the last line was not empty, it needs to be counted.
+  if [[ "${input: -1}" = $'\n' ]] || [[ -n "$line" ]]; then
+    # Increment for the EOF (not captured by the loop above).
+    (( ++n_lines ))
+  fi
+
   echo "$n_lines"
 }
 
@@ -167,7 +174,8 @@ batslib_print_kv_multi() {
 #
 # Otherwise, print all pairs in multi-line format after indenting values
 # with two spaces for readability (identical to using `batslib_prefix'
-# and `batslib_print_kv_multi')
+# and `batslib_print_kv_multi'). For each value, if it contains a trailing
+# newline, it will be printed keeping all empty lines / trailing newlines.
 #
 # Globals:
 #   none
@@ -194,7 +202,12 @@ batslib_print_kv_single_or_multi() {
   else
     local -i i
     for (( i=1; i < ${#pairs[@]}; i+=2 )); do
-      pairs[$i]="$( batslib_prefix < <(printf '%s' "${pairs[$i]}") )"
+      # If value has trailing newline, keep it.
+      if [[ "${pairs[$i]: -1}" = $'\n' ]]; then
+        pairs[$i]="$( batslib_prefix --keep-empty-lines < <(printf '%s' "${pairs[$i]}") )"
+      else
+        pairs[$i]="$( batslib_prefix < <(printf '%s' "${pairs[$i]}") )"
+      fi
     done
     batslib_print_kv_multi "${pairs[@]}"
   fi
@@ -205,6 +218,7 @@ batslib_print_kv_single_or_multi() {
 # Globals:
 #   none
 # Arguments:
+#   --keep-empty-lines - optional. preserves empty lines and trailing newlines.
 #   $1 - [=  ] prefix string
 # Returns:
 #   none
@@ -213,11 +227,25 @@ batslib_print_kv_single_or_multi() {
 # Outputs:
 #   STDOUT - prefixed lines
 batslib_prefix() {
+  local -i keep_empty_lines=0
+  if [ "${1-}" = '--keep-empty-lines' ]; then
+    keep_empty_lines=1
+    shift
+  fi
   local -r prefix="${1:-  }"
-  local line
-  while IFS='' read -r line || [[ -n $line ]]; do
+
+  local line=''
+  local -i lines_read=0
+  # Read and print each line, until the last line (handled below).
+  while IFS='' read -r line; do
     printf '%s%s\n' "$prefix" "$line"
+    (( ++lines_read ))
   done
+  # Print for the last line with EOF (not captured by the loop above).
+  # The last read line must be non-empty, or `keep_empty_lines` with non-empty stdin.
+  if (( keep_empty_lines )) && (( lines_read > 0 )) || [[ -n "$line" ]]; then
+    printf '%s%s\n' "$prefix" "$line"
+  fi
 }
 
 # Mark select lines of the text read from the standard input by
@@ -229,6 +257,7 @@ batslib_prefix() {
 # Globals:
 #   none
 # Arguments:
+#   --keep-empty-lines - optional. preserves empty lines and trailing newlines.
 #   $1 - marking string
 #   $@ - indices (zero-based) of lines to mark
 # Returns:
@@ -238,13 +267,19 @@ batslib_prefix() {
 # Outputs:
 #   STDOUT - lines after marking
 batslib_mark() {
+  local -i keep_empty_lines=0
+  if [ "${1-}" = '--keep-empty-lines' ]; then
+    keep_empty_lines=1
+    shift
+  fi
   local -r symbol="$1"; shift
   # Sort line numbers.
   set -- $( sort -nu <<< "$( printf '%d\n' "$@" )" )
 
-  local line
+  local line=''
   local -i idx=0
-  while IFS='' read -r line || [[ -n $line ]]; do
+  # Read and print each line, until the last line (handled below).
+  while IFS='' read -r line; do
     if (( ${1:--1} == idx )); then
       printf '%s\n' "${symbol}${line:${#symbol}}"
       shift
@@ -253,6 +288,16 @@ batslib_mark() {
     fi
     (( ++idx ))
   done
+  # Print for the last line with EOF (not captured by the loop above).
+  # The last read line must be non-empty, or `keep_empty_lines` with non-empty stdin.
+  if (( keep_empty_lines )) && (( idx > 0 )) || [[ -n "$line" ]]; then
+    if (( ${1:--1} == idx )); then
+      printf '%s\n' "${symbol}${line:${#symbol}}"
+      shift
+    else
+      printf '%s\n' "$line"
+    fi
+  fi
 }
 
 # Enclose the input text in header and footer lines.
