@@ -4,9 +4,9 @@
   "description": "Supporting library for Bats test helpers",
   "homepage": "https://github.com/bats-core/bats-support",
   "license": "CC0-1.0",
-  "author": "Zoltán Tömböl (https://github.com/ztombol)",
   "contributors": [
-    "Jason Karns <jason.karns@gmail.com> (http://jason.karns.name)"
+    "Jason Karns <jason.karns@gmail.com> (http://jasonkarns.com)",
+    "Zoltán Tömböl (https://github.com/ztombol)"
   ],
   "repository": {
     "type": "git",
