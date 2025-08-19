@@ -29,5 +29,15 @@
   },
   "peerDependencies": {
     "bats": "0.4 || ^1"
-  }
+  },
+  "keywords": [
+    "bats",
+    "bash",
+    "shell",
+    "test",
+    "unit",
+    "assert",
+    "assertion",
+    "helper"
+  ]
 }
