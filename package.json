@@ -2,14 +2,17 @@
   "name": "bats-support",
   "version": "0.3.0",
   "description": "Supporting library for Bats test helpers",
-  "homepage": "https://github.com/jasonkarns/bats-support",
+  "homepage": "https://github.com/bats-core/bats-support",
   "license": "CC0-1.0",
   "author": "Zoltán Tömböl (https://github.com/ztombol)",
   "contributors": [
     "Jason Karns <jason.karns@gmail.com> (http://jason.karns.name)"
   ],
-  "repository": "github:jasonkarns/bats-support",
-  "bugs": "https://github.com/jasonkarns/bats-support/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bats-core/bats-support.git"
+  },
+  "bugs": "https://github.com/bats-core/bats-support/issues",
   "directories": {
     "lib": "src",
     "test": "test"
