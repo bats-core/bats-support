@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "Supporting library for Bats test helpers",
   "homepage": "https://github.com/bats-core/bats-support",
-  "license": "CC0-1.0",
+  "license": "0BSD",
   "contributors": [
     "Jason Karns <jason.karns@gmail.com> (http://jasonkarns.com)",
     "Zoltán Tömböl (https://github.com/ztombol)"
