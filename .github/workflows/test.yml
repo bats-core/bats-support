@@ -9,4 +9,7 @@ permissions: {}
 jobs:
   test:
     uses: bats-core/.github/.github/workflows/test.yml@main
-    permissions: { contents: read }
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
