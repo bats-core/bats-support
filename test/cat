@@ -1,1 +1,3 @@
-# Dummy file stubbing a stub/mock
+#!/bin/sh
+# Stub cat used by "modified path" tests.
+# On Windows, a shebang is required so the runner knows how to execute this file.
