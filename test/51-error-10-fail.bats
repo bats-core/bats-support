@@ -14,3 +14,14 @@ load test_helper
   [ "$status" -eq 1 ]
   [ "$output" == 'message' ]
 }
+
+@test 'fail(): invokes batslib_err only once when it fails' {
+  batslib_err() {
+    echo 'called'
+    return 1
+  }
+
+  run fail </dev/null
+  [ "$status" -eq 1 ]
+  [ "$output" == 'called' ]
+}
