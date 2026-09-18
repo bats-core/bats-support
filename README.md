@@ -1,7 +1,7 @@
 # bats-support
 
 [![GitHub release](https://img.shields.io/github/release/bats-core/bats-support.svg)](https://github.com/bats-core/bats-support/releases/latest)
-[![Build Status](https://github.com/bats-core/bats-support/workflows/Tests/badge.svg)](https://github.com/bats-core/bats-support/actions?query=workflow%3ATests)
+[![Build Status](https://github.com/bats-core/bats-support/actions/workflows/test.yml/badge.svg)](https://github.com/bats-core/bats-support/actions?query=workflow%3ATests)
 
 
 `bats-support` is a supporting library providing common functions to
