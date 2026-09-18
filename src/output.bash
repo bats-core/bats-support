@@ -36,11 +36,10 @@ batslib_err() {
 
 # Count the number of lines in the given string.
 #
-# TODO(ztombol): Fix tests and remove this note after #93 is resolved!
-# NOTE: Due to a bug in Bats, `batslib_count_lines "$output"' does not
-#       give the same result as `${#lines[@]}' when the output contains
-#       empty lines.
-#       See PR #93 (https://github.com/sstephenson/bats/pull/93).
+# NOTE: By default, Bats omits empty lines from `${lines[@]}', so its
+#       length can differ from `batslib_count_lines "$output"'. Use
+#       `run --keep-empty-lines' with Bats 1.5.0 or newer when empty
+#       entries must be retained in `${lines[@]}'.
 #
 # Globals:
 #   none
